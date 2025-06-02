@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Webhook Dashboard</title>
+</head>
+<body>
+  <h1>Webhook Events</h1>
+  <ul id="events-list"></ul>
+
+  <script>
+    async function fetchEvents() {
+      const response = await fetch('/events');
+      const events = await response.json();
+
+      const ul = document.getElementById('events-list');
+      ul.innerHTML = '';  // Clear old events
+
+      events.forEach(event => {
+        let message = '';
+        const timestamp = new Date(event.timestamp).toLocaleString();
+
+        if(event.type === 'push') {
+          message = `"${event.author}" pushed to "${event.to_branch}" on ${timestamp}`;
+        } else if(event.type === 'pull_request') {
+          message = `"${event.author}" submitted a pull request from "${event.from_branch}" to "${event.to_branch}" on ${timestamp}`;
+        } else if(event.type === 'merge') {
+          message = `"${event.author}" merged a pull request from "${event.from_branch}" to "${event.to_branch}" on ${timestamp}`;
+        }
+
+        const li = document.createElement('li');
+        li.textContent = message;
+        ul.appendChild(li);
+      });
+    }
+
+    // Fetch events every 15 seconds
+    fetchEvents();
+    setInterval(fetchEvents, 15000);
+  </script>
+</body>
+</html>
